@@ -1,8 +1,19 @@
 import sys
 import os
 import json
+import logging
+import datetime
 
 from django.conf import settings
+
+
+def timeStamped(fmt='%Y-%m-%d-%H-%M-%S'):
+    return datetime.datetime.now().strftime((fmt))
+
+date = timeStamped()
+LOG_FILE = "faxapi-" + date + ".log"
+logging.basicConfig(filename=LOG_FILE, level=logging.DEBUG)
+logging.debug('Logging has started for the FAX API APPLICATION')
 
 
 DEBUG = os.environ.get('DEBUG', 'on') == 'on'
@@ -43,35 +54,39 @@ def post(request, *args):
 def parseData(request):
 
     try:
-        #form = cgi.FieldStorage()
-        #print(request.body)
-        #print("ATTEMPTING STRING DUMP")
         str_response = request.body.decode("utf-8")
-        #print(type(str_response))
-        #str_response = callbackBytString.decode("utf-8")
         frontChopNumber = str_response.find('{"Transaction"')
         backChopNumber = str_response.find('}}')
         choppedStr_response = str_response[frontChopNumber:backChopNumber + 2]
         jsonResult = json.loads(choppedStr_response)
-        print(type(jsonResult))
-        print(jsonResult['Transaction']['TypeCode'])
+        print(jsonResult['Transaction']['StatusCode'])
 
-        #The callback for HelloSign
-        '''
-        #b'------------------------------77934ad02ac3\r\nContent-Disposition: form-data; name="json"\r\n\r\n{"event":{"event_type":"callback_test","event_time":"1484160381","event_hash":"0a7312945ee92921cea0c546d19b8fb180300a62e743647b6b8462bc70c58b67","event_metadata":{"related_signature_id":null,"reported_for_account_id":"f8f805b754bdd2068b8cfb75bb0e2eeb08fbdda2","reported_for_app_id":null,"event_message":null}}}\r\n------------------------------77934ad02ac3--\r\n'
-        '''
+        logging.info("BEGIN Callback information\n")
+        logging.info("GUID= " + jsonResult['Transaction']['Guid'])
+        logging.info("TO= " + jsonResult['Transaction']['To'])
+        logging.info("FROM= " + jsonResult['Transaction']['From'])
+        logging.info("IsInbound")
+        logging.info(jsonResult['Transaction']['IsInbound'])
+        logging.info("IsDraft")
+        logging.info(jsonResult['Transaction']['IsDraft'])
+        logging.info("TypeCode " + jsonResult['Transaction']['TypeCode'])
+        logging.info("StatusCode " + jsonResult['Transaction']['StatusCode'])
+        logging.info("ErrorCode")
+        logging.info(jsonResult['Transaction']['ErrorCode'])
+        logging.info("CreatedAt= " + jsonResult['Transaction']['CreatedAt'])
+        logging.info("UpdatedAt= " + jsonResult['Transaction']['UpdatedAt'])
+        logging.info("Uri= " + jsonResult['Transaction']['Uri'])
+        logging.info("NumPagesBilled")
+        logging.info(jsonResult['Transaction']['NumPagesBilled'])
+        logging.info("END Callback information\n")
 
-        #curl -X POST http://localhost:8000/post/ -d '{"foo":"Bar"}'
-        #curl -X POST http://f3705785.ngrok.io/post/ -d '{"foo":"Bar"}'
-
-
-        #The callback for HelloFax
-
-
+    except TypeError:
+        print(sys.exc_info()[0])
     except:
+        message = sys.exc_info()[0]
         print("Unexpected error:", sys.exc_info()[0])
+        logging.debug("Exception thrown - parseData")
 
-    #print(form)
 
 @csrf_exempt
 def index(request):
@@ -84,7 +99,9 @@ urlpatterns = (
 
 application = get_wsgi_application()
 
+
 if __name__ == "__main__":
     from django.core.management import execute_from_command_line
-
+    timestamp = timeStamped()
+    logging.debug(timestamp)
     execute_from_command_line(sys.argv)
