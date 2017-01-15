@@ -1,6 +1,6 @@
 import sys
 import os
-import cgi
+import json
 
 from django.conf import settings
 
@@ -30,19 +30,31 @@ from django.core.wsgi import get_wsgi_application
 from django.http import HttpResponse
 
 
+
+#@require_POST
 @csrf_exempt
-@require_POST
 def post(request, *args):
     response = HttpResponse("Hello API Event Received")
     parseData(request)
 
     return response
 
+@csrf_exempt
 def parseData(request):
 
     try:
         #form = cgi.FieldStorage()
-        print(request.body)
+        #print(request.body)
+        #print("ATTEMPTING STRING DUMP")
+        str_response = request.body.decode("utf-8")
+        #print(type(str_response))
+        #str_response = callbackBytString.decode("utf-8")
+        frontChopNumber = str_response.find('{"Transaction"')
+        backChopNumber = str_response.find('}}')
+        choppedStr_response = str_response[frontChopNumber:backChopNumber + 2]
+        jsonResult = json.loads(choppedStr_response)
+        print(type(jsonResult))
+        print(jsonResult['Transaction']['TypeCode'])
 
         #The callback for HelloSign
         '''
@@ -61,13 +73,13 @@ def parseData(request):
 
     #print(form)
 
-
+@csrf_exempt
 def index(request):
     return HttpResponse('Hello World')
 
 urlpatterns = (
     url(r'^$', index),
-    url(r'^post', post),
+    url(r'^post', csrf_exempt(post)),
 )
 
 application = get_wsgi_application()
