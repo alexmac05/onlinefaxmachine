@@ -46,6 +46,9 @@ from django.http import HttpResponse
 @csrf_exempt
 def post(request, *args):
     response = HttpResponse("Hello API Event Received")
+    #print(request.body)
+    #print(request.headers)
+
     parseData(request)
 
     return response
