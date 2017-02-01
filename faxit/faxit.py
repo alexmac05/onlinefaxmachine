@@ -42,16 +42,56 @@ from django.http import HttpResponse
 
 
 
-#@require_POST
+
 @csrf_exempt
 def post(request, *args):
     response = HttpResponse("Hello API Event Received")
-    #print(request.body)
-    #print(request.headers)
 
-    parseData(request)
+
+    parseHelloSignData(request, 'post_Account')
 
     return response
+
+@csrf_exempt
+def appCallback(request, *args):
+    response = HttpResponse("Hello API Event Received")
+
+    parseHelloSignData(request, 'post_APP')
+
+    return response
+
+@csrf_exempt
+def parseHelloSignData(request, methodHit):
+    try:
+
+        data = json.loads(request.POST.get('json'))
+        event = data['event']
+
+
+        event_type = event['event_type']
+
+        if event_type == 'signature_request_sent':
+            print("EVENT TYPE is sig")
+            sigrequest = data['event']['event_metadata']
+            print(sigrequest)
+            #deeper = sigrequest['signature_request']
+            #print(type(deeper))
+            #print(deeper)
+
+
+
+        print("BEGIN \n")
+        print(methodHit + "\n")
+        print(event_type + "\n")
+        print("\n")
+        print(event)
+
+        print("END \n")
+
+    except:
+        message = sys.exc_info()[0]
+        print("Unexpected error:", sys.exc_info()[0])
+        logging.debug("Exception thrown - parseHelloSignData")
 
 @csrf_exempt
 def parseData(request):
@@ -93,11 +133,12 @@ def parseData(request):
 
 @csrf_exempt
 def index(request):
-    return HttpResponse('Hello World')
+    return HttpResponse('Hello World, Happy monday!')
 
 urlpatterns = (
     url(r'^$', index),
     url(r'^post', csrf_exempt(post)),
+    url(r'^appCallback', csrf_exempt(appCallback)),
 )
 
 application = get_wsgi_application()
