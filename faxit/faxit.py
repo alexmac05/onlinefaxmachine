@@ -3,8 +3,12 @@ import os
 import json
 import logging
 import datetime
+import yaml
 
 from django.conf import settings
+
+creds = yaml.load(open('creds.yml'))
+print(creds)
 
 
 def timeStamped(fmt='%Y-%m-%d-%H-%M-%S'):

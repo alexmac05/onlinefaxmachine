@@ -1,3 +1,5 @@
+*.json
+pip-selfcheck.json
 *.yml
 .idea/misc.xml
 .idea/workstuffs.iml
