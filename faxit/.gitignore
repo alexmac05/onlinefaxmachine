@@ -1,0 +1,17 @@
+*.yml
+.idea/misc.xml
+.idea/workstuffs.iml
+NDA100.zip
+pythonNgrok/logs/CallBack.log
+.idea/
+logs/
+*.pdf
+*.csv
+*.zip
+*.xml
+*.iml
+*.log
+*.doc
+*.docx
+*.xls
+*.xlsx
