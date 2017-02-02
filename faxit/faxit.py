@@ -4,10 +4,14 @@ import json
 import logging
 import datetime
 import yaml
+import requests
 
 from django.conf import settings
 
 creds = yaml.load(open('creds.yml'))
+FAX_API_ACCOUNT = creds['helaineHelloFaxAPIKey']
+FAX_PASSWORD = creds['helaineHelloFaxPassword']
+FAX_EMAIL = creds['helaineHelloFaxEmail']
 
 
 def timeStamped(fmt='%Y-%m-%d-%H-%M-%S'):
@@ -154,9 +158,24 @@ def index(request):
     template = loader.get_template('index.html')
     return HttpResponse(template.render())
 
+from django.shortcuts import render
 @csrf_exempt
 def yourname(request):
-    return HttpResponse(request)
+    urlstring = "https://" + FAX_EMAIL + ":" + FAX_PASSWORD + "@api.hellofax.com/v1/Accounts/" + FAX_API_ACCOUNT
+    r = requests.get(urlstring)
+    jsonResult = json.loads(r.text)
+    results = {}
+    ShouldSendOutboundConfEmails = jsonResult['Account']['ShouldSendOutboundConfEmails']
+    ShouldIncludePdfsInReceivedFaxEmails = jsonResult['Account']['ShouldIncludePdfsInReceivedFaxEmails']
+    DefaultOutboundFaxCallbackUrl = jsonResult['Account']['DefaultOutboundFaxCallbackUrl']
+    Guid = jsonResult['Account']['Guid']
+
+    results.update({'ShouldSendOutboundConfEmails': ShouldSendOutboundConfEmails})
+    results.update({'ShouldIncludePdfsInReceivedFaxEmails': ShouldIncludePdfsInReceivedFaxEmails})
+    results.update({'DefaultOutboundFaxCallbackUrl': DefaultOutboundFaxCallbackUrl})
+    results.update({'Guid': Guid})
+    return render(request, "results.html", results)
+
 
 urlpatterns = (
     url(r'^$', index),
