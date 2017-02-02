@@ -8,7 +8,6 @@ import yaml
 from django.conf import settings
 
 creds = yaml.load(open('creds.yml'))
-print(creds)
 
 
 def timeStamped(fmt='%Y-%m-%d-%H-%M-%S'):
@@ -25,8 +24,26 @@ CSRF_COOKIE_SECURE = False
 SECRET_KEY = os.environ.get('SECRET_KEY', '{{ secret_key }}')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
 
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': ['/Users/alexmcferron/onlinefaxmachine/onlinefaxmachine/faxit/templates/',],
+        'APP_DIRS' : True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
 settings.configure(
     DEBUG=DEBUG,
+    TEMPLATES=TEMPLATES,
     SECRET_KEY=SECRET_KEY,
     ALLOWED_HOSTS=ALLOWED_HOSTS, 
     ROOT_URLCONF=__name__,
@@ -37,8 +54,9 @@ settings.configure(
     ),
 )
 
+
+
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
 
 from django.conf.urls import url
 from django.core.wsgi import get_wsgi_application
@@ -51,11 +69,11 @@ from django.http import HttpResponse
 def post(request, *args):
     response = HttpResponse("Hello API Event Received")
 
-
-    parseHelloSignData(request, 'post_Account')
+    parseData(request)
 
     return response
 
+#This is used for the HelloSign API and should be removed from this app
 @csrf_exempt
 def appCallback(request, *args):
     response = HttpResponse("Hello API Event Received")
@@ -64,6 +82,7 @@ def appCallback(request, *args):
 
     return response
 
+#This is used for the HelloSign API and should be removed from this app
 @csrf_exempt
 def parseHelloSignData(request, methodHit):
     try:
@@ -71,18 +90,12 @@ def parseHelloSignData(request, methodHit):
         data = json.loads(request.POST.get('json'))
         event = data['event']
 
-
         event_type = event['event_type']
 
         if event_type == 'signature_request_sent':
             print("EVENT TYPE is sig")
             sigrequest = data['event']['event_metadata']
             print(sigrequest)
-            #deeper = sigrequest['signature_request']
-            #print(type(deeper))
-            #print(deeper)
-
-
 
         print("BEGIN \n")
         print(methodHit + "\n")
@@ -134,10 +147,13 @@ def parseData(request):
         print("Unexpected error:", sys.exc_info()[0])
         logging.debug("Exception thrown - parseData")
 
-
+from django.template import loader
 @csrf_exempt
 def index(request):
-    return HttpResponse('Hello World, Happy monday!')
+
+    template = loader.get_template('index.html')
+    return HttpResponse(template.render())
+
 
 urlpatterns = (
     url(r'^$', index),
@@ -153,3 +169,4 @@ if __name__ == "__main__":
     timestamp = timeStamped()
     logging.debug(timestamp)
     execute_from_command_line(sys.argv)
+
