@@ -154,11 +154,15 @@ def index(request):
     template = loader.get_template('index.html')
     return HttpResponse(template.render())
 
+@csrf_exempt
+def yourname(request):
+    return HttpResponse(request)
 
 urlpatterns = (
     url(r'^$', index),
     url(r'^post', csrf_exempt(post)),
     url(r'^appCallback', csrf_exempt(appCallback)),
+    url(r'^yourname', csrf_exempt(yourname))
 )
 
 application = get_wsgi_application()
