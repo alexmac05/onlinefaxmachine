@@ -2,16 +2,38 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Django Templates Tutorial</title>
+    <title>HelloFax API WebApp</title>
 </head>
 <body>
-   <h1>Our First Template</h1>
-
-<form action="/yourname/" method="post">
-    <label for="your_name">Your name: </label>
-    <input id="your_name" type="text" name="your_name" value="{{ current_name }}">
-    <input type="submit" value="Account Information">
+   <h1>RESET</h1>
+   <form action="/index/" method="post">
+    <input type="submit" value="RESET">
+    <br/>
 </form>
+
+
+<form action="/accountinfo/" method="post">
+    <h2>HelloFax API Function calls</h2>
+    <label>Get account Information</label>
+    <input type="submit" value="Account Information">
+    <br/>
+</form>
+
+<form action="/setcallbackfunction/" method="post">
+    <label>Set the Callback</label>
+    <input type="submit" value="Set the HelloFax API Callbacks">
+    <label for="callback_value">Set Callback: </label>
+    <input size="50" id="callback_value" type="text" name="callback_value" value="{{ callback_value }}">
+</form>
+
+
+
+   <h1>Account Info</h1>
+   <h4>ShouldSendOutboundConfEmails= {{ ShouldSendOutboundConfEmails}}</h4>
+   <h4>ShouldIncludePdfsInReceivedFaxEmails= {{ShouldIncludePdfsInReceivedFaxEmails}}</h4>
+   <h4>DefaultOutboundFaxCallbackUrl= {{DefaultOutboundFaxCallbackUrl}}</h4>
+   <h4>DefaultInboundFaxCallbackUrl= {{DefaultInboundFaxCallbackUrl}}</h4>
+   <h4>Guid= {{Guid}}</h4>
 
 </body>
 </html>

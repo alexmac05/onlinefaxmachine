@@ -159,8 +159,9 @@ def index(request):
     return HttpResponse(template.render())
 
 from django.shortcuts import render
+
 @csrf_exempt
-def yourname(request):
+def accountinfo(request):
     urlstring = "https://" + FAX_EMAIL + ":" + FAX_PASSWORD + "@api.hellofax.com/v1/Accounts/" + FAX_API_ACCOUNT
     r = requests.get(urlstring)
     jsonResult = json.loads(r.text)
@@ -168,20 +169,40 @@ def yourname(request):
     ShouldSendOutboundConfEmails = jsonResult['Account']['ShouldSendOutboundConfEmails']
     ShouldIncludePdfsInReceivedFaxEmails = jsonResult['Account']['ShouldIncludePdfsInReceivedFaxEmails']
     DefaultOutboundFaxCallbackUrl = jsonResult['Account']['DefaultOutboundFaxCallbackUrl']
+    DefaultInboundFaxCallbackUrl = jsonResult['Account']['DefaultInboundFaxCallbackUrl']
     Guid = jsonResult['Account']['Guid']
 
     results.update({'ShouldSendOutboundConfEmails': ShouldSendOutboundConfEmails})
     results.update({'ShouldIncludePdfsInReceivedFaxEmails': ShouldIncludePdfsInReceivedFaxEmails})
     results.update({'DefaultOutboundFaxCallbackUrl': DefaultOutboundFaxCallbackUrl})
+    results.update({'DefaultInboundFaxCallbackUrl': DefaultInboundFaxCallbackUrl})
     results.update({'Guid': Guid})
-    return render(request, "results.html", results)
+    return render(request, "index.html", results)
 
+@csrf_exempt
+def setcallbackfunction(request):
+    urlstring = "https://" + FAX_EMAIL + ":" + FAX_PASSWORD + "@api.hellofax.com/v1/Accounts/" + FAX_API_ACCOUNT
+    allData = request.POST
+    newCallbackValue = allData.get("callback_value")
+    newCallbackValue = newCallbackValue + "/post"
+    print(newCallbackValue)
+
+    print(type(newCallbackValue))
+    data = {
+        'DefaultInboundFaxCallbackUrl': newCallbackValue,
+        'DefaultOutboundFaxCallbackUrl': newCallbackValue
+    }
+    r = requests.post(urlstring, data)
+
+    return render(request, "index.html")
 
 urlpatterns = (
     url(r'^$', index),
+    url(r'^index', index),
     url(r'^post', csrf_exempt(post)),
     url(r'^appCallback', csrf_exempt(appCallback)),
-    url(r'^yourname', csrf_exempt(yourname))
+    url(r'^accountinfo', csrf_exempt(accountinfo)),
+    url(r'^setcallbackfunction', csrf_exempt(setcallbackfunction))
 )
 
 application = get_wsgi_application()
