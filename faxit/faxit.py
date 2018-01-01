@@ -198,6 +198,34 @@ from django.shortcuts import render
 
 
 @csrf_exempt
+def sendembeddedrequest(request):
+
+    apikey = creds['alexmcferronAPIKEY']
+    clientID = creds['alexmcferronClientID']
+    client = HSClient(api_key=apikey)
+
+    response = client.create_embedded_unclaimed_draft(
+        test_mode=True,
+        client_id=clientID,
+        draft_type='request_signature',
+        requester_email_address='alex.mcferron@hellsign.com',
+        is_for_embedded_signing=True,
+        files=['slowpdf2.pdf']
+    )
+
+    print(response)
+    url = response.claim_url
+    results = {}
+    results.update({'TempUrl': url})
+    results.update({'clientID': clientID})
+
+    message = utilTimeStampAndMessage("CALLING THE IFRAME NOW ALEX M")
+    print(message)
+    return render(request, "sign.html", results)
+
+
+
+@csrf_exempt
 def sendsigrequest(request):
 
     apikey = creds['alexmcferronAPIKEY']
@@ -248,7 +276,45 @@ def sendsigrequest(request):
     print(message)
     return render(request, "sign.html", results)
 
+@csrf_exempt
+def sendembeddedtemplate(request):
 
+    apikey = creds['alexmcferronAPIKEY']
+    clientID = creds['alexmcferronClientID']
+    client = HSClient(api_key=apikey)
+
+    files = ["slowpdf2.pdf"]
+    signer_roles = [
+        {'name': 'Baltar', 'order': 1},
+        {'name': 'Madame President', 'order': 2},
+        {'name': 'Lee Adama', 'order': 3},
+    ]
+    cc_roles = ['Deck Chief', 'Admiral', 'Starbuck']
+    merge_fields = [{'name': 'mymerge', 'type': 'text'}]
+
+    template_draft = client.create_embedded_template_draft(
+        client_id=clientID,
+        signer_roles=signer_roles,
+        test_mode=True,
+        files=files,
+        title='Battlestar Test Draft',
+        subject='There are cylons onboard',
+        message='Halp',
+        cc_roles=cc_roles,
+        merge_fields=merge_fields
+    )
+
+    template_id = template_draft.template_id
+    url = template_draft.edit_url
+    print(url)
+
+    results = {}
+    results.update({'TempUrl': url})
+    results.update({'clientID': clientID})
+
+    message = utilTimeStampAndMessage("CALLING THE IFRAME NOW ALEX M")
+    print(message)
+    return render(request, "sign.html", results)
 @csrf_exempt
 def accountinfo(request):
     urlstring = "https://" + FAX_EMAIL + ":" + FAX_PASSWORD + "@api.hellofax.com/v1/Accounts/" + FAX_API_ACCOUNT
@@ -294,7 +360,9 @@ urlpatterns = (
     url(r'^appCallback', csrf_exempt(appCallback)),
     url(r'^accountinfo', csrf_exempt(accountinfo)),
     url(r'^setcallbackfunction', csrf_exempt(setcallbackfunction)),
-    url(r'^sendsigrequest', csrf_exempt(sendsigrequest))
+    url(r'^sendsigrequest', csrf_exempt(sendsigrequest)),
+    url(r'^sendembeddedrequest', csrf_exempt(sendembeddedrequest)),
+    url(r'^sendembeddedtemplate', csrf_exempt(sendembeddedtemplate))
 
 )
 
